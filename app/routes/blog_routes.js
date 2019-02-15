@@ -3,7 +3,7 @@ const express = require('express')
 // Passport docs: http://www.passportjs.org/docs/
 const passport = require('passport')
 
-// pull in Mongoose model for examples
+// pull in Mongoose model for blogs
 const Blog = require('../models/blog.js')
 
 // this is a collection of methods that help us detect situations when we need
@@ -16,7 +16,7 @@ const handle404 = customErrors.handle404
 const requireOwnership = customErrors.requireOwnership
 
 // this is middleware that will remove blank fields from `req.body`, e.g.
-// { example: { title: '', text: 'foo' } } -> { example: { text: 'foo' } }
+// { blogs: { title: '', text: 'foo' } } -> { blogs: { text: 'foo' } }
 const removeBlanks = require('../../lib/remove_blank_fields')
 // passing this as a second argument to `router.<verb>` will make it
 // so that a token MUST be passed for that route to be available
@@ -27,29 +27,29 @@ const requireToken = passport.authenticate('bearer', { session: false })
 const router = express.Router()
 
 // INDEX
-// GET /examples
+// GET /blogs
 router.get('/blogs', requireToken, (req, res, next) => {
   Blog.find()
     .then(blogs => {
-      // `examples` will be an array of Mongoose documents
+      // `blogs` will be an array of Mongoose documents
       // we want to convert each one to a POJO, so we use `.map` to
       // apply `.toObject` to each one
       return blogs.map(blog => blog.toObject())
     })
-    // respond with status 200 and JSON of the examples
+    // respond with status 200 and JSON of the blogs
     .then(blogs => res.status(200).json({ blogs: blogs }))
     // if an error occurs, pass it to the handler
     .catch(next)
 })
 
 // CREATE
-// POST /examples
+// POST /blogs
 router.post('/blogs', requireToken, (req, res, next) => {
-  // set owner of new example to be current user
+  // set owner of new blogs to be current user
   req.body.blog.owner = req.user
   // console.log('OWNER IN REQ IS: ' + req.body.blog.owner)
   Blog.create(req.body.blog)
-    // respond to succesful `create` with status 201 and JSON of new "example"
+    // respond to succesful `create` with status 201 and JSON of new "blogs"
     .then(blog => {
       res.status(201).json({ blog: blog.toObject() })
     })
@@ -60,30 +60,53 @@ router.post('/blogs', requireToken, (req, res, next) => {
 })
 
 // SHOW
-// GET /examples/5a7db6c74d55bc51bdf39793
+// GET /blogs/5a7db6c74d55bc51bdf39793
 router.get('/blogs/:id', requireToken, (req, res, next) => {
   // req.params.id will be set based on the `:id` in the route
   Blog.findById(req.params.id)
     .then(handle404)
     .then((blog) => { console.log(blog) })
-    // if `findById` is succesful, respond with 200 and "example" JSON
+    // if `findById` is succesful, respond with 200 and "blogs" JSON
     .then(blog => res.status(200).json({ blog: blog.toObject() }))
     // if an error occurs, pass it to the handler
     .catch(next)
 })
 
 // DESTROY
-// DELETE /examples/5a7db6c74d55bc51bdf39793
+// DELETE /blogs/5a7db6c74d55bc51bdf39793
 router.delete('/blogs/:id', requireToken, (req, res, next) => {
   Blog.findById(req.params.id)
     .then(handle404)
     .then(blog => {
       // throw an error if current user doesn't own `blog`
       requireOwnership(req, blog)
-      // delete the example ONLY IF the above didn't throw
+      // delete the blogs ONLY IF the above didn't throw
       blog.remove()
     })
     // send back 204 and no content if the deletion succeeded
+    .then(() => res.sendStatus(204))
+    // if an error occurs, pass it to the handler
+    .catch(next)
+})
+
+// UPDATE
+// PATCH /blogs/5a7db6c74d55bc51bdf39793
+router.patch('/blogs/:id', requireToken, removeBlanks, (req, res, next) => {
+  // if the client attempts to change the `owner` property by including a new
+  // owner, prevent that by deleting that key/value pair
+  delete req.body.blog.owner
+
+  Blog.findById(req.params.id)
+    .then(handle404)
+    .then(blog => {
+      // pass the `req` object and the Mongoose record to `requireOwnership`
+      // it will throw an error if the current user isn't the owner
+      requireOwnership(req, blog)
+
+      // pass the result of Mongoose's `.update` to the next `.then`
+      return blog.update(req.body.blog)
+    })
+    // if that succeeded, return 204 and no JSON
     .then(() => res.sendStatus(204))
     // if an error occurs, pass it to the handler
     .catch(next)
