@@ -24,7 +24,7 @@ const blogSchema = new mongoose.Schema({
   toJSON: { virtuals: true }
 })
 
-blogSchema.virtual('commentCount').get(function () => {
+blogSchema.virtual('commentCount').get(function () {
   return this.comments.length
 })
 
