@@ -42,4 +42,51 @@ router.get('/blogs', requireToken, (req, res, next) => {
     .catch(next)
 })
 
+// CREATE
+// POST /examples
+router.post('/blogs', requireToken, (req, res, next) => {
+  // set owner of new example to be current user
+  req.body.blog.owner = req.user
+  // console.log('OWNER IN REQ IS: ' + req.body.blog.owner)
+  Blog.create(req.body.blog)
+    // respond to succesful `create` with status 201 and JSON of new "example"
+    .then(blog => {
+      res.status(201).json({ blog: blog.toObject() })
+    })
+    // if an error occurs, pass it off to our error handler
+    // the error handler needs the error message and the `res` object so that it
+    // can send an error message back to the client
+    .catch(next)
+})
+
+// SHOW
+// GET /examples/5a7db6c74d55bc51bdf39793
+router.get('/blogs/:id', requireToken, (req, res, next) => {
+  // req.params.id will be set based on the `:id` in the route
+  Blog.findById(req.params.id)
+    .then(handle404)
+    .then((blog) => { console.log(blog) })
+    // if `findById` is succesful, respond with 200 and "example" JSON
+    .then(blog => res.status(200).json({ blog: blog.toObject() }))
+    // if an error occurs, pass it to the handler
+    .catch(next)
+})
+
+// DESTROY
+// DELETE /examples/5a7db6c74d55bc51bdf39793
+router.delete('/blogs/:id', requireToken, (req, res, next) => {
+  Blog.findById(req.params.id)
+    .then(handle404)
+    .then(blog => {
+      // throw an error if current user doesn't own `blog`
+      requireOwnership(req, blog)
+      // delete the example ONLY IF the above didn't throw
+      blog.remove()
+    })
+    // send back 204 and no content if the deletion succeeded
+    .then(() => res.sendStatus(204))
+    // if an error occurs, pass it to the handler
+    .catch(next)
+})
+
 module.exports = router
