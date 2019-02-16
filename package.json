@@ -19,6 +19,7 @@
     "cors": "^2.8.4",
     "dotenv": "^4.0.0",
     "express": "^4.16.1",
+    "jq": "^1.7.2",
     "jsonwebtoken": "^8.1.1",
     "mongodb": "^2.2.31",
     "mongoose": "^4.12.0",
