@@ -45,7 +45,8 @@ router.post('/sign-up', (req, res, next) => {
       // return necessary params to create a user
       return {
         email: req.body.credentials.email,
-        hashedPassword: hash
+        hashedPassword: hash,
+        username: req.body.credentials.username
       }
     })
     // create user with provided email and hashed password
@@ -63,38 +64,74 @@ router.post('/sign-in', (req, res, next) => {
   const pw = req.body.credentials.password
   let user
 
-  // find a user based on the email that was passed
-  User.findOne({ email: req.body.credentials.email })
-    .then(record => {
-      // if we didn't find a user with that email, send 401
-      if (!record) {
-        throw new BadCredentialsError()
-      }
-      // save the found user outside the promise chain
-      user = record
-      // `bcrypt.compare` will return true if the result of hashing `pw`
-      // is exactly equal to the hashed password stored in the DB
-      return bcrypt.compare(pw, user.hashedPassword)
-    })
-    .then(correctPassword => {
-      // if the passwords matched
-      if (correctPassword) {
-        // the token will be a 16 byte random hex string
-        const token = crypto.randomBytes(16).toString('hex')
-        user.token = token
-        // save the token to the DB as a property on user
-        return user.save()
-      } else {
-        // throw an error to trigger the error handler and end the promise chain
-        // this will send back 401 and a message about sending wrong parameters
-        throw new BadCredentialsError()
-      }
-    })
-    .then(user => {
-      // return status 201, the email, and the new token
-      res.status(201).json({ user: user.toObject() })
-    })
-    .catch(next)
+  // determine if an email or username was used to request sign-in
+  if (req.body.credentials.email) {
+    // find a user based on the email that was passed
+    User.findOne({ email: req.body.credentials.email })
+      .then(record => {
+        // if we didn't find a user with that email, send 401
+        if (!record) {
+          throw new BadCredentialsError()
+        }
+        // save the found user outside the promise chain
+        user = record
+        // `bcrypt.compare` will return true if the result of hashing `pw`
+        // is exactly equal to the hashed password stored in the DB
+        return bcrypt.compare(pw, user.hashedPassword)
+      })
+      .then(correctPassword => {
+        // if the passwords matched
+        if (correctPassword) {
+          // the token will be a 16 byte random hex string
+          const token = crypto.randomBytes(16).toString('hex')
+          user.token = token
+          // save the token to the DB as a property on user
+          return user.save()
+        } else {
+          // throw an error to trigger the error handler and end the promise chain
+          // this will send back 401 and a message about sending wrong parameters
+          throw new BadCredentialsError()
+        }
+      })
+      .then(user => {
+        // return status 201, the email, and the new token
+        res.status(201).json({ user: user.toObject() })
+      })
+      .catch(next)
+  } else if (!req.body.credentials.email || req.body.credentials.username) {
+    // find a user based on the username that was passed
+    User.findOne({ username: req.body.credentials.username })
+      .then(record => {
+        // if we didn't find a user with that username, send 401
+        if (!record) {
+          throw new BadCredentialsError()
+        }
+        // save the found user outside the promise chain
+        user = record
+        // `bcrypt.compare` will return true if the result of hashing `pw`
+        // is exactly equal to the hashed password stored in the DB
+        return bcrypt.compare(pw, user.hashedPassword)
+      })
+      .then(correctPassword => {
+        // if the passwords matched
+        if (correctPassword) {
+          // the token will be a 16 byte random hex string
+          const token = crypto.randomBytes(16).toString('hex')
+          user.token = token
+          // save the token to the DB as a property on user
+          return user.save()
+        } else {
+          // throw an error to trigger the error handler and end the promise chain
+          // this will send back 401 and a message about sending wrong parameters
+          throw new BadCredentialsError()
+        }
+      })
+      .then(user => {
+        // return status 201, the email, and the new token
+        res.status(201).json({ user: user.toObject() })
+      })
+      .catch(next)
+  }
 })
 
 // CHANGE password
