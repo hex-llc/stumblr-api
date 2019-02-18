@@ -82,8 +82,7 @@ router.get('/blogs/:id', requireToken, (req, res, next) => {
   // req.params.id will be set based on the `:id` in the route
   Blog.findById(req.params.id)
     .then(handle404)
-    .then((blog) => { console.log(blog) })
-    // if `findById` is succesful, respond with 200 and "blogs" JSON
+    // if `findById` is successful, respond with 200 and "blogs" JSON
     .then(blog => res.status(200).json({ blog: blog.toObject() }))
     // if an error occurs, pass it to the handler
     .catch(next)
