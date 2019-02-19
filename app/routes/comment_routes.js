@@ -73,6 +73,7 @@ router.post('/comments', requireToken, (req, res, next) => {
         { _id: comment.blog },
         { $push: { comments: comment }
         })
+        .then(console.log)
     })
     // if an error occurs, pass it off to our error handler
     // the error handler needs the error message and the `res` object so that it
