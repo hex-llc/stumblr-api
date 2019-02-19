@@ -31,7 +31,10 @@ const router = express.Router()
 router.get('/blogs', (req, res, next) => {
   Blog.find()
     .populate('owner')
-    .populate('comments')
+    .populate({
+      path: 'comments',
+      populate: { path: 'owner' }
+    })
     .then(blogs => {
       // `blogs` will be an array of Mongoose documents
       // we want to convert each one to a POJO, so we use `.map` to
@@ -48,7 +51,10 @@ router.get('/blogs', (req, res, next) => {
 router.get('/user-blogs', requireToken, (req, res, next) => {
   Blog.find({ owner: req.user })
     .populate('owner')
-    .populate('comments')
+    .populate({
+      path: 'comments',
+      populate: { path: 'owner' }
+    })
     .then(blogs => {
       // `blogs` will be an array of Mongoose documents
       // we want to convert each one to a POJO, so we use `.map` to
