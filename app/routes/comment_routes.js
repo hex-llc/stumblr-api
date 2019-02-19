@@ -5,6 +5,7 @@ const passport = require('passport')
 
 // pull in Mongoose model for examples
 const Comment = require('../models/comment')
+const Blog = require('../models/blog')
 
 // this is a collection of methods that help us detect situations when we need
 // to throw a custom error
@@ -65,6 +66,13 @@ router.post('/comments', requireToken, (req, res, next) => {
     // respond to succesful `create` with status 201 and JSON of new "example"
     .then(comment => {
       res.status(201).json({ comment: comment.toObject() })
+      return comment
+    })
+    .then(comment => {
+      Blog.update(
+        { _id: comment.blog },
+        { $push: { comments: comment }
+        })
     })
     // if an error occurs, pass it off to our error handler
     // the error handler needs the error message and the `res` object so that it
