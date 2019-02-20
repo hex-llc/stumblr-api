@@ -5,6 +5,7 @@ const passport = require('passport')
 
 // pull in Mongoose model for examples
 const Comment = require('../models/comment')
+const Blog = require('../models/blog')
 
 // this is a collection of methods that help us detect situations when we need
 // to throw a custom error
@@ -31,6 +32,7 @@ const router = express.Router()
 // GET /comments
 router.get('/comments', requireToken, (req, res, next) => {
   Comment.find()
+    .populate('owner')
     .then(comments => {
       // `examples` will be an array of Mongoose documents
       // we want to convert each one to a POJO, so we use `.map` to
@@ -48,6 +50,7 @@ router.get('/comments', requireToken, (req, res, next) => {
 router.get('/comments/:id', requireToken, (req, res, next) => {
   // req.params.id will be set based on the `:id` in the route
   Comment.findById(req.params.id)
+    .populate('owner')
     .then(handle404)
     // if `findById` is succesful, respond with 200 and "example" JSON
     .then(comment => res.status(200).json({ comment: comment.toObject() }))
@@ -65,6 +68,14 @@ router.post('/comments', requireToken, (req, res, next) => {
     // respond to succesful `create` with status 201 and JSON of new "example"
     .then(comment => {
       res.status(201).json({ comment: comment.toObject() })
+      return comment
+    })
+    .then(comment => {
+      Blog.update(
+        { _id: comment.blog },
+        { $push: { comments: comment }
+        })
+        .then(console.log)
     })
     // if an error occurs, pass it off to our error handler
     // the error handler needs the error message and the `res` object so that it

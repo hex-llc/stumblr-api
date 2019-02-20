@@ -1,9 +1,10 @@
 #!/bin/sh
 
 API="http://localhost:4741"
-URL_PATH="/blogs"
+URL_PATH="/user-blogs"
 
-curl "${API}${URL_PATH}/${ID}" \
+curl "${API}${URL_PATH}" \
+  --include \
   --request GET \
   --header "Authorization: Bearer ${TOKEN}"
 

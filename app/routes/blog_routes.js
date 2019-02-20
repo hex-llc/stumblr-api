@@ -28,8 +28,33 @@ const router = express.Router()
 
 // INDEX
 // GET /blogs
-router.get('/blogs', requireToken, (req, res, next) => {
+router.get('/blogs', (req, res, next) => {
   Blog.find()
+    .populate('owner')
+    .populate({
+      path: 'comments',
+      populate: { path: 'owner' }
+    })
+    .then(blogs => {
+      // `blogs` will be an array of Mongoose documents
+      // we want to convert each one to a POJO, so we use `.map` to
+      // apply `.toObject` to each one
+      return blogs.map(blog => blog.toObject())
+    })
+    // respond with status 200 and JSON of the blogs
+    .then(blogs => res.status(200).json({ blogs: blogs }))
+    // if an error occurs, pass it to the handler
+    .catch(next)
+})
+
+// GET /blogs by signed-in user
+router.get('/user-blogs', requireToken, (req, res, next) => {
+  Blog.find({ owner: req.user })
+    .populate('owner')
+    .populate({
+      path: 'comments',
+      populate: { path: 'owner' }
+    })
     .then(blogs => {
       // `blogs` will be an array of Mongoose documents
       // we want to convert each one to a POJO, so we use `.map` to
@@ -64,9 +89,9 @@ router.post('/blogs', requireToken, (req, res, next) => {
 router.get('/blogs/:id', requireToken, (req, res, next) => {
   // req.params.id will be set based on the `:id` in the route
   Blog.findById(req.params.id)
+    .populate('comments')
     .then(handle404)
-    .then((blog) => { console.log(blog) })
-    // if `findById` is succesful, respond with 200 and "blogs" JSON
+    // if `findById` is successful, respond with 200 and "blogs" JSON
     .then(blog => res.status(200).json({ blog: blog.toObject() }))
     // if an error occurs, pass it to the handler
     .catch(next)
