@@ -89,7 +89,11 @@ router.post('/blogs', requireToken, (req, res, next) => {
 router.get('/blogs/:id', requireToken, (req, res, next) => {
   // req.params.id will be set based on the `:id` in the route
   Blog.findById(req.params.id)
-    .populate('comments')
+    .populate('owner')
+    .populate({
+      path: 'comments',
+      populate: { path: 'owner' }
+    })
     .then(handle404)
     // if `findById` is successful, respond with 200 and "blogs" JSON
     .then(blog => res.status(200).json({ blog: blog.toObject() }))
