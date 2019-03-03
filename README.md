@@ -34,50 +34,28 @@ The focus of the back-end of this project was to handle all users, blogs, and co
 - Authorization handled by a third-party login (i.e. Facebook or Google)
 
 ### Routes
-- Blogs
-  -Path: url/blogs
-  -Methods: GET (find, populate, toObject, json)
 
-  -Path: url/user-blogs
-  -Method: GET (find, populate, toObject, json)
-  -Require: Token
+Although `comments` require a token, comments on a specific blog can be viewed when all blogs are indexed due to the execution of a `populate()` within blogs which allows us to view those specific comments. This essentially gives any user on the website the ability to view all comments just as they do with blogs.
 
-  -Path: url/blogs
-  -Method: POST (create, json, toObject)
-  -Require: Token
-
-  -Path: url/blogs/id
-  -Method: GET (findById, populate, json, toObject)
-  -Require: Token
-
-  -Path: url/blogs/id
-  -Method: DELETE (findById, remove)
-  -Require: Token
-
-  -Path: url/blos/id
-  -Method: PATCH (findById, update)
-  -Require: TOKEN
-
-- Comments
-  -Path: url/comments
-  -Methods: GET (find, populate, toObject, json)
-  -Require: Token
-
-  -Path: url/comments/id
-  -Method: GET (find, populate, toObject, json)
-  -Require: Token
-
-  -Path: url/comments
-  -Method: POST (create, json, toObject)
-  -Require: Token
-
-  -Path: url/comments/id
-  -Method: PATCH (findById, populate, json, toObject)
-  -Require: Token
-
-  -Path: url/comments/id
-  -Method: DELETE (findById, remove)
-  -Require: Token
+| Verb   | URI Pattern        | Request Body      | Headers   | Action              |
+|--------|--------------------|-------------------|-----------|---------------------|
+| POST   | `/sign-up`         | **credentials**   | N/A       | user sign-up        |
+| POST   | `/sign-in`         | **credentials**   | N/A       | user sign-in        |
+| DELETE | `/sign-out`        | N/A               | **Token** | user sign-out       |
+| PATCH  | `/change-password` | **passwords**     | **Token** | change-password     |
+|        |                    |                   |           |                     |
+| GET    | `/blogs`           | N/A               | N/A       | index blogs         |
+| GET    | `/user-blogs`      | N/A               | **Token** | index user blogs    |
+| GET    | `/blogs/:id`       | N/A               | **Token** | show single blog    |
+| POST   | `/blogs`           | `blog: {}`        | **Token** | create blog         |
+| PATCH  | `/blogs/:id`       | **blog delta**    | **Token** | update blog         |
+| DELETE | `/blogs/:id`       | N/A               | **Token** | remove blog         |
+|        |                    |                   |           |                     |
+| GET    | `/comments`        | N/A               | **Token** | index blog comments |
+| GET    | `/comments/:id`    | N/A               | **Token** | show blog comment   |
+| POST   | `/comments`        | `comment: {}`     | **Token** | create blog comment |
+| PATCH  | `/comments/:id`    | **comment delta** | **Token** | update blog comment |
+| DELETE | `/comments/:id`    | N/A               | **Token** | delete blog comment |
 
 ### ERD
 
