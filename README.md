@@ -33,6 +33,52 @@ The focus of the back-end of this project was to handle all users, blogs, and co
 - A field within a resource or a new resource entirely with the purpose of housing all images used by the client.
 - Authorization handled by a third-party login (i.e. Facebook or Google)
 
+### Routes
+- Blogs
+  -Path: url/blogs
+  -Methods: GET (find, populate, toObject, json)
+
+  -Path: url/user-blogs
+  -Method: GET (find, populate, toObject, json)
+  -Require: Token
+
+  -Path: url/blogs
+  -Method: POST (create, json, toObject)
+  -Require: Token
+
+  -Path: url/blogs/id
+  -Method: GET (findById, populate, json, toObject)
+  -Require: Token
+
+  -Path: url/blogs/id
+  -Method: DELETE (findById, remove)
+  -Require: Token
+
+  -Path: url/blos/id
+  -Method: PATCH (findById, update)
+  -Require: TOKEN
+
+- Comments
+  -Path: url/comments
+  -Methods: GET (find, populate, toObject, json)
+  -Require: Token
+
+  -Path: url/comments/id
+  -Method: GET (find, populate, toObject, json)
+  -Require: Token
+
+  -Path: url/comments
+  -Method: POST (create, json, toObject)
+  -Require: Token
+
+  -Path: url/comments/id
+  -Method: PATCH (findById, populate, json, toObject)
+  -Require: Token
+
+  -Path: url/comments/id
+  -Method: DELETE (findById, remove)
+  -Require: Token
+
 ### ERD
 
 1. [ ] [Link to ERD (Entity relationship diagram).](https://imgur.com/BDpvDy0)
